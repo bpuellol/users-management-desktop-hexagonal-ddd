@@ -19,6 +19,10 @@ import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.Databa
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.DatabaseConnectionFactory;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.repository.UserRepositoryMySQL;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.UserController;
+import com.jcaa.usersmanagement.application.port.in.child.*;
+import com.jcaa.usersmanagement.application.service.child.*;
+import com.jcaa.usersmanagement.infrastructure.adapter.persistence.child.repository.ChildRepositoryMySQL;
+import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.child.controller.ChildController;
 
 import java.sql.Connection;
 import jakarta.validation.Validator;
@@ -39,6 +43,7 @@ public final class DependencyContainer {
   private static final String SMTP_FROM_NAME = "smtp.from.name";
 
   private final UserController userController;
+  private final ChildController childController;
 
   public DependencyContainer() {
     final AppProperties properties = new AppProperties();
@@ -63,6 +68,16 @@ public final class DependencyContainer {
     final GetAllUsersUseCase getAllUsersUseCase = new GetAllUsersService(userRepository);
     final LoginUseCase loginUseCase = new LoginService(userRepository, validator);
 
+    final ChildRepositoryMySQL childRepository = new ChildRepositoryMySQL(connection);
+
+    final CreateChildUseCase createChildUseCase = new CreateChildService(childRepository, childRepository, validator);
+    final UpdateChildUseCase updateChildUseCase = new UpdateChildService(childRepository, childRepository, validator);
+    final DeleteChildUseCase deleteChildUseCase = new DeleteChildService(childRepository, childRepository, validator);
+    final GetChildByIdUseCase getChildByIdUseCase = new GetChildByIdService(childRepository, validator);
+    final GetAllChildrenUseCase getAllChildrenUseCase = new GetAllChildrenService(childRepository);
+
+      this.childController = new ChildController(createChildUseCase, updateChildUseCase, deleteChildUseCase, getChildByIdUseCase, getAllChildrenUseCase);
+
     this.userController =
         new UserController(
             createUserUseCase,
@@ -73,11 +88,13 @@ public final class DependencyContainer {
             loginUseCase);
   }
 
+
   public UserController userController() {
     return userController;
   }
+  public ChildController childController() {return childController;}
 
-  private static Connection buildDatabaseConnection(final AppProperties properties) {
+    private static Connection buildDatabaseConnection(final AppProperties properties) {
     final DatabaseConfig config =
         new DatabaseConfig(
             properties.get(DB_HOST),
