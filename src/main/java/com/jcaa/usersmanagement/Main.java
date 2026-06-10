@@ -1,6 +1,7 @@
 package com.jcaa.usersmanagement;
 
 import com.jcaa.usersmanagement.infrastructure.config.DependencyContainer;
+import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.allergy.cli.AllergyManagementCli;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.child.cli.ChildManagementCli;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.cli.UserManagementCli;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.cli.io.ConsoleIO;
@@ -33,12 +34,14 @@ public final class Main {
       console.println(BANNER);
       console.println("  [1] Users Module");
       console.println("  [2] Children Module");
+      console.println("  [3] Allergzies Module");
       console.println("  [0] Exit");
 
       final int choice = console.readInt("\n  Option: ");
       switch (choice) {
         case 1 -> new UserManagementCli(container.userController(), console).start();
         case 2 -> new ChildManagementCli(container.childController(), console).start();
+        case 3 -> new AllergyManagementCli(container.allergyController(), console).start();
         case 0 -> {
           console.println("\n  Goodbye!\n");
           running = false;
