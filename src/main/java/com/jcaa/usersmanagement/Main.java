@@ -6,6 +6,8 @@ import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.child.cli.Chil
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.cli.UserManagementCli;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.cli.io.ConsoleIO;
 import java.util.Scanner;
+
+import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dish.cli.DishManagementCli;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,7 @@ public final class Main {
       console.println("  [1] Users Module");
       console.println("  [2] Children Module");
       console.println("  [3] Allergzies Module");
+      console.println("  [4] Dishes Module");
       console.println("  [0] Exit");
 
       final int choice = console.readInt("\n  Option: ");
@@ -42,6 +45,7 @@ public final class Main {
         case 1 -> new UserManagementCli(container.userController(), console).start();
         case 2 -> new ChildManagementCli(container.childController(), console).start();
         case 3 -> new AllergyManagementCli(container.allergyController(), console).start();
+        case 4 -> new DishManagementCli(container.dishController(), console).start();
         case 0 -> {
           console.println("\n  Goodbye!\n");
           running = false;

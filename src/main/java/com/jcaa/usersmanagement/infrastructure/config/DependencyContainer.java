@@ -7,6 +7,7 @@ import com.jcaa.usersmanagement.application.port.in.GetUserByIdUseCase;
 import com.jcaa.usersmanagement.application.port.in.LoginUseCase;
 import com.jcaa.usersmanagement.application.port.in.UpdateUserUseCase;
 import com.jcaa.usersmanagement.application.port.in.allergy.*;
+import com.jcaa.usersmanagement.application.port.in.dish.*;
 import com.jcaa.usersmanagement.application.service.CreateUserService;
 import com.jcaa.usersmanagement.application.service.DeleteUserService;
 import com.jcaa.usersmanagement.application.service.EmailNotificationService;
@@ -15,11 +16,13 @@ import com.jcaa.usersmanagement.application.service.GetUserByIdService;
 import com.jcaa.usersmanagement.application.service.LoginService;
 import com.jcaa.usersmanagement.application.service.UpdateUserService;
 import com.jcaa.usersmanagement.application.service.allergy.*;
+import com.jcaa.usersmanagement.application.service.dish.*;
 import com.jcaa.usersmanagement.infrastructure.adapter.email.JavaMailEmailSenderAdapter;
 import com.jcaa.usersmanagement.infrastructure.adapter.email.SmtpConfig;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.allergy.repository.AllergyRepositoryMySQL;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.DatabaseConfig;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.DatabaseConnectionFactory;
+import com.jcaa.usersmanagement.infrastructure.adapter.persistence.dish.repository.DishRepositoryMySQL;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.repository.UserRepositoryMySQL;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.allergy.controller.AllergyController;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.UserController;
@@ -27,8 +30,18 @@ import com.jcaa.usersmanagement.application.port.in.child.*;
 import com.jcaa.usersmanagement.application.service.child.*;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.child.repository.ChildRepositoryMySQL;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.child.controller.ChildController;
+import com.jcaa.usersmanagement.application.port.in.allergy.GetChildrenWithAllergiesUseCase;
+import com.jcaa.usersmanagement.application.port.in.allergy.GetAllergiesByChildIdUseCase;
+import com.jcaa.usersmanagement.application.port.in.allergy.GetAllergiesBySeverityUseCase;
+import com.jcaa.usersmanagement.application.port.in.allergy.GetAllergyCountPerChildUseCase;
+import com.jcaa.usersmanagement.application.service.allergy.GetChildrenWithAllergiesService;
+import com.jcaa.usersmanagement.application.service.allergy.GetAllergiesByChildIdService;
+import com.jcaa.usersmanagement.application.service.allergy.GetAllergiesBySeverityService;
+import com.jcaa.usersmanagement.application.service.allergy.GetAllergyCountPerChildService;
 
 import java.sql.Connection;
+
+import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.dish.controller.DishController;
 import jakarta.validation.Validator;
 
 public final class DependencyContainer {
@@ -49,6 +62,7 @@ public final class DependencyContainer {
   private final UserController userController;
   private final ChildController childController;
   private final AllergyController allergyController;
+  private final DishController dishController;
 
     public DependencyContainer() {
     final AppProperties properties = new AppProperties();
@@ -93,17 +107,41 @@ public final class DependencyContainer {
             loginUseCase);
 
       // Allergy module
-      final AllergyRepositoryMySQL allergyRepository = new AllergyRepositoryMySQL(connection);
+        final AllergyRepositoryMySQL allergyRepository = new AllergyRepositoryMySQL(connection);
 
-      final CreateAllergyUseCase createAllergyUseCase  = new CreateAllergyService(allergyRepository, allergyRepository, validator);
-      final UpdateAllergyUseCase updateAllergyUseCase  = new UpdateAllergyService(allergyRepository, allergyRepository, validator);
-      final DeleteAllergyUseCase deleteAllergyUseCase  = new DeleteAllergyService(allergyRepository, allergyRepository, validator);
-      final GetAllergyByIdUseCase getAllergyByIdUseCase  = new GetAllergyByIdService(allergyRepository, validator);
-      final GetAllAllergiesUseCase getAllAllergiesUseCase = new GetAllAllergiesService(allergyRepository);
+        final CreateAllergyUseCase  createAllergyUseCase  = new CreateAllergyService(allergyRepository, allergyRepository, validator);
+        final UpdateAllergyUseCase  updateAllergyUseCase  = new UpdateAllergyService(allergyRepository, allergyRepository, validator);
+        final DeleteAllergyUseCase  deleteAllergyUseCase  = new DeleteAllergyService(allergyRepository, allergyRepository, validator);
+        final GetAllergyByIdUseCase getAllergyByIdUseCase  = new GetAllergyByIdService(allergyRepository, validator);
+        final GetAllAllergiesUseCase getAllAllergiesUseCase = new GetAllAllergiesService(allergyRepository);
 
-      this.allergyController = new AllergyController(
-              createAllergyUseCase, updateAllergyUseCase, deleteAllergyUseCase,
-              getAllergyByIdUseCase, getAllAllergiesUseCase);
+        final GetChildrenWithAllergiesUseCase getChildrenWithAllergiesUseCase =
+                new GetChildrenWithAllergiesService(allergyRepository);
+        final GetAllergiesByChildIdUseCase getAllergiesByChildIdUseCase =
+                new GetAllergiesByChildIdService(allergyRepository, validator);
+        final GetAllergiesBySeverityUseCase getAllergiesBySeverityUseCase =
+                new GetAllergiesBySeverityService(allergyRepository, validator);
+        final GetAllergyCountPerChildUseCase getAllergyCountPerChildUseCase =
+                new GetAllergyCountPerChildService(allergyRepository);
+
+        this.allergyController = new AllergyController(
+                createAllergyUseCase, updateAllergyUseCase, deleteAllergyUseCase,
+                getAllergyByIdUseCase, getAllAllergiesUseCase,
+                getChildrenWithAllergiesUseCase, getAllergiesByChildIdUseCase,
+                getAllergiesBySeverityUseCase, getAllergyCountPerChildUseCase);
+
+        // dish module
+        final DishRepositoryMySQL dishRepository = new DishRepositoryMySQL(connection);
+
+        final CreateDishUseCase createDishUseCase   = new CreateDishService(dishRepository, dishRepository, validator);
+        final UpdateDishUseCase updateDishUseCase   = new UpdateDishService(dishRepository, dishRepository, validator);
+        final DeleteDishUseCase deleteDishUseCase   = new DeleteDishService(dishRepository, dishRepository, validator);
+        final GetDishByIdUseCase getDishByIdUseCase  = new GetDishByIdService(dishRepository, validator);
+        final GetAllDishesUseCase getAllDishesUseCase  = new GetAllDishesService(dishRepository);
+
+        this.dishController = new DishController(
+                createDishUseCase, updateDishUseCase, deleteDishUseCase,
+                getDishByIdUseCase, getAllDishesUseCase);
   }
 
 
@@ -112,6 +150,7 @@ public final class DependencyContainer {
   }
   public ChildController childController() {return childController;}
   public AllergyController allergyController() {return allergyController;}
+  public DishController dishController() { return dishController; }
 
     private static Connection buildDatabaseConnection(final AppProperties properties) {
     final DatabaseConfig config =
