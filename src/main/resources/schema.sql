@@ -48,3 +48,26 @@ CREATE TABLE IF NOT EXISTS children (
     INDEX idx_children_status (status),
     INDEX idx_children_full_name (full_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- Tabla: allergies
+-- Módulo: Gestión de  Alergias del Comedor Infantil
+-- =============================================
+CREATE TABLE IF NOT EXISTS allergies (
+    id               VARCHAR(36)   NOT NULL PRIMARY KEY,
+    child_id         VARCHAR(36)   NOT NULL,
+    ingredient       VARCHAR(150)  NOT NULL COMMENT 'Ingrediente que provoca la alergia',
+    severity         ENUM('MILD','MODERATE','SEVERE') NOT NULL DEFAULT 'MILD',
+    notes            VARCHAR(300)  NULL COMMENT 'Observaciones adicionales',
+    created_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at       DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_allergies_child_id (child_id),
+    INDEX idx_allergies_ingredient (ingredient),
+
+    CONSTRAINT fk_allergies_child
+        FOREIGN KEY (child_id)
+        REFERENCES children(id)
+        ON DELETE CASCADE
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

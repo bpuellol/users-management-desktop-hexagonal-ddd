@@ -6,6 +6,7 @@ import com.jcaa.usersmanagement.application.port.in.GetAllUsersUseCase;
 import com.jcaa.usersmanagement.application.port.in.GetUserByIdUseCase;
 import com.jcaa.usersmanagement.application.port.in.LoginUseCase;
 import com.jcaa.usersmanagement.application.port.in.UpdateUserUseCase;
+import com.jcaa.usersmanagement.application.port.in.allergy.*;
 import com.jcaa.usersmanagement.application.service.CreateUserService;
 import com.jcaa.usersmanagement.application.service.DeleteUserService;
 import com.jcaa.usersmanagement.application.service.EmailNotificationService;
@@ -13,11 +14,14 @@ import com.jcaa.usersmanagement.application.service.GetAllUsersService;
 import com.jcaa.usersmanagement.application.service.GetUserByIdService;
 import com.jcaa.usersmanagement.application.service.LoginService;
 import com.jcaa.usersmanagement.application.service.UpdateUserService;
+import com.jcaa.usersmanagement.application.service.allergy.*;
 import com.jcaa.usersmanagement.infrastructure.adapter.email.JavaMailEmailSenderAdapter;
 import com.jcaa.usersmanagement.infrastructure.adapter.email.SmtpConfig;
+import com.jcaa.usersmanagement.infrastructure.adapter.persistence.allergy.repository.AllergyRepositoryMySQL;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.DatabaseConfig;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.config.DatabaseConnectionFactory;
 import com.jcaa.usersmanagement.infrastructure.adapter.persistence.repository.UserRepositoryMySQL;
+import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.allergy.controller.AllergyController;
 import com.jcaa.usersmanagement.infrastructure.entrypoint.desktop.controller.UserController;
 import com.jcaa.usersmanagement.application.port.in.child.*;
 import com.jcaa.usersmanagement.application.service.child.*;
@@ -44,8 +48,9 @@ public final class DependencyContainer {
 
   private final UserController userController;
   private final ChildController childController;
+  private final AllergyController allergyController;
 
-  public DependencyContainer() {
+    public DependencyContainer() {
     final AppProperties properties = new AppProperties();
 
     final Connection connection = buildDatabaseConnection(properties);
@@ -86,6 +91,19 @@ public final class DependencyContainer {
             getUserByIdUseCase,
             getAllUsersUseCase,
             loginUseCase);
+
+      // Allergy module
+      final AllergyRepositoryMySQL allergyRepository = new AllergyRepositoryMySQL(connection);
+
+      final CreateAllergyUseCase createAllergyUseCase  = new CreateAllergyService(allergyRepository, allergyRepository, validator);
+      final UpdateAllergyUseCase updateAllergyUseCase  = new UpdateAllergyService(allergyRepository, allergyRepository, validator);
+      final DeleteAllergyUseCase deleteAllergyUseCase  = new DeleteAllergyService(allergyRepository, allergyRepository, validator);
+      final GetAllergyByIdUseCase getAllergyByIdUseCase  = new GetAllergyByIdService(allergyRepository, validator);
+      final GetAllAllergiesUseCase getAllAllergiesUseCase = new GetAllAllergiesService(allergyRepository);
+
+      this.allergyController = new AllergyController(
+              createAllergyUseCase, updateAllergyUseCase, deleteAllergyUseCase,
+              getAllergyByIdUseCase, getAllAllergiesUseCase);
   }
 
 
@@ -93,6 +111,7 @@ public final class DependencyContainer {
     return userController;
   }
   public ChildController childController() {return childController;}
+  public AllergyController allergyController() {return allergyController;}
 
     private static Connection buildDatabaseConnection(final AppProperties properties) {
     final DatabaseConfig config =
