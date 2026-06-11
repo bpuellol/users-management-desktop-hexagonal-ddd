@@ -71,3 +71,19 @@ CREATE TABLE IF NOT EXISTS allergies (
         ON DELETE CASCADE
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =============================================
+-- Tabla: dishes
+-- Módulo: Gestión de Platos del Comedor Infantil
+-- Los ingredientes se almacenan como texto CSV
+-- para facilitar la consulta de compatibilidad
+-- con alergias de los niños.
+-- =============================================
+CREATE TABLE IF NOT EXISTS dishes (
+    id          VARCHAR(36)   NOT NULL PRIMARY KEY,
+    name        VARCHAR(150)  NOT NULL UNIQUE COMMENT 'Nombre del plato',
+    ingredients TEXT          NOT NULL          COMMENT 'Ingredientes separados por coma, ej: leche,huevo,trigo',
+    created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_dishes_name (name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
