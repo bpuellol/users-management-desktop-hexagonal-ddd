@@ -89,7 +89,7 @@ public final class ChildRepositoryMySQL
     try (final PreparedStatement stmt = connection.prepareStatement(SQL_INSERT)) {
       stmt.setString(1, child.getId().value());
       stmt.setString(2, child.getEnrollment().value());
-      stmt.setString(3, child.getFullName());
+      stmt.setString(3, child.getFullName().value());
       stmt.setString(4, child.getBirthDate().toString());
       stmt.setString(5, child.getAdmissionDate().toString());
       stmt.setString(6, child.getDischargeDate() != null
@@ -106,7 +106,7 @@ public final class ChildRepositoryMySQL
   public ChildModel update(final ChildModel child) {
     try (final PreparedStatement stmt = connection.prepareStatement(SQL_UPDATE)) {
       stmt.setString(1, child.getEnrollment().value());
-      stmt.setString(2, child.getFullName());
+      stmt.setString(2, child.getFullName().value());
       stmt.setString(3, child.getBirthDate().toString());
       stmt.setString(4, child.getAdmissionDate().toString());
       stmt.setString(5, child.getDischargeDate() != null
